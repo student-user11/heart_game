@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 최애에게 하트 보내기</title>
+    <!-- Tailwind CSS (스타일링용) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (귀여운 폰트 적용) -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 기본 폰트 설정 */
+        body {
+            font-family: 'Jua', sans-serif;
+            touch-action: manipulation; /* 모바일에서 더블탭 확대 방지 */
+            overflow: hidden; /* 스크롤 방지 */
+            user-select: none; /* 텍스트 선택 방지 (게임 느낌) */
+        }
+
+        /* 하트가 떠오르는 애니메이션 */
+        @keyframes floatUp {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -150%) scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -300%) scale(1.5) rotate(20deg);
+                opacity: 0;
+            }
+        }
+
+        .floating-heart {
+            position: absolute;
+            pointer-events: none; /* 클릭 통과 */
+            animation: floatUp 1s ease-out forwards;
+            font-size: 2rem;
+            z-index: 50;
+        }
+
+        /* 버튼 눌림 효과 */
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+
+        /* 배경 그라데이션 애니메이션 */
+        .bg-animate {
+            background-size: 200% 200%;
+            animation: gradientMove 6s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200 h-screen flex flex-col items-center justify-center relative bg-animate">
+
+    <!-- 메인 컨텐츠 영역 -->
+    <div class="text-center z-10 w-full max-w-md px-4">
+        
+        <!-- 
+            ⭐⭐⭐ [수정 포인트 1] ⭐⭐⭐
+            아래 '내 최애' 글자를 여러분이 좋아하는 아이돌이나 친구 이름으로 바꿔보세요! 
+            예: 차은우, 뉴진스, 3학년 5반 이쁜이
+        -->
+        <h1 id="targetName" class="text-4xl text-pink-600 drop-shadow-md mb-2">내 최애</h1>
+        
+        <p class="text-gray-600 text-lg mb-8">에게 하트를 보내주세요! 💖</p>
+
+        <!-- 점수 표시판 -->
+        <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-xl mb-10 border-4 border-white">
+            <p class="text-gray-500 text-sm mb-1">보낸 사랑</p>
+            <div id="score" class="text-6xl text-pink-500 font-bold transition-all duration-100">0</div>
+            <p id="message" class="text-pink-400 text-sm mt-2 h-6">터치해서 시작!</p>
+        </div>
+
+        <!-- 하트 발사 버튼 -->
+        <button id="heartBtn" class="btn-press group relative transition-all duration-200 hover:scale-105">
+            <!-- 버튼 배경 -->
+            <div class="absolute inset-0 bg-red-400 rounded-full blur opacity-40 group-hover:opacity-60 transition-opacity"></div>
+            <!-- 실제 버튼 -->
+            <div class="relative bg-gradient-to-tr from-pink-500 to-red-400 w-40 h-40 rounded-full flex items-center justify-center shadow-lg border-4 border-white/50">
+                <span class="text-6xl filter drop-shadow-lg">💖</span>
+            </div>
+        </button>
+
+    </div>
+
+    <!-- 하단 크레딧 -->
+    <!-- 
+        ⭐⭐⭐ [수정 포인트 2] ⭐⭐⭐
+        여러분의 이름이나 닉네임을 적어보세요.
+    -->
+    <div class="absolute bottom-4 text-gray-500 text-xs text-center w-full">
+        Made with Love by <span class="font-bold text-pink-500">익명의 팬</span>
+    </div>
+
+    <script>
+        // 변수 설정
+        let count = 0;
+        const heartBtn = document.getElementById('heartBtn');
+        const scoreDisplay = document.getElementById('score');
+        const messageDisplay = document.getElementById('message');
+        const targetName = document.getElementById('targetName').innerText;
+
+        // 칭찬 멘트 목록
+        const messages = [
+            "사랑해! 😍",
+            "완전 멋져! ✨",
+            "심쿵했어 💘",
+            "너뿐이야! 🌏",
+            "오늘도 화이팅 💪",
+            "맛있는거 먹어 🍔",
+            "평생 응원할게 🎉"
+        ];
+
+        // 하트 이모지 목록
+        const hearts = ["💖", "💕", "💞", "💓", "💗", "💘", "💝"];
+
+        // 버튼 클릭 이벤트
+        heartBtn.addEventListener('click', (e) => {
+            // 1. 점수 증가
+            count++;
+            scoreDisplay.innerText = count.toLocaleString(); // 1,000 단위 콤마
+
+            // 2. 숫자 애니메이션 (살짝 커졌다 작아짐)
+            scoreDisplay.style.transform = "scale(1.2)";
+            setTimeout(() => scoreDisplay.style.transform = "scale(1)", 100);
+
+            // 3. 랜덤 메시지 출력 (10번 클릭할 때마다)
+            if (count % 10 === 0 || count === 1) {
+                const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+                messageDisplay.innerText = randomMsg;
+            }
+
+            // 4. 하트 파티클 효과 함수 호출
+            createFloatingHeart(e);
+        });
+
+        // 하트 생성 함수
+        function createFloatingHeart(e) {
+            const heart = document.createElement('div');
+            heart.classList.add('floating-heart');
+            
+            // 랜덤 하트 모양 선택
+            heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+            
+            // 위치 설정 (버튼 중심 부근에서 랜덤하게)
+            // 모바일/PC 좌표 처리
+            const x = e.clientX || (window.innerWidth / 2);
+            const y = e.clientY || (window.innerHeight / 2);
+
+            // 약간의 랜덤 위치 오차 추가
+            const randomX = (Math.random() - 0.5) * 60;
+            
+            heart.style.left = `${x + randomX}px`;
+            heart.style.top = `${y}px`;
+
+            document.body.appendChild(heart);
+
+            // 애니메이션 끝나면 요소 삭제 (메모리 관리)
+            setTimeout(() => {
+                heart.remove();
+            }, 1000);
+        }
+
+        // 모바일 터치 대응 (더블탭 줌 방지 및 빠른 반응)
+        heartBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // 기본 터치 동작 방지
+            heartBtn.click(); // 클릭 이벤트 트리거
+        }, { passive: false });
+
+    </script>
+</body>
+</html>
